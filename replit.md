@@ -8,9 +8,10 @@ Loja virtual completa para venda de keys de jogos digitais com integração ao M
 - **Framework**: React 18 + TypeScript
 - **Roteamento**: Wouter
 - **Estilização**: Tailwind CSS + Shadcn UI
-- **State Management**: React Context API (Auth + Cart)
+- **State Management**: React Context API (Auth + Cart + Theme)
 - **Requisições**: Axios com interceptors Bearer Token
 - **Queries**: TanStack Query (React Query)
+- **Dark Mode**: ThemeProvider com localStorage sync
 
 ### Backend
 - **API Principal**: Java Spring Boot (porta 8080)
@@ -29,7 +30,9 @@ client/
 │   │   ├── Header.tsx
 │   │   ├── GameCard.tsx
 │   │   ├── Filters.tsx
-│   │   └── CartDrawer.tsx
+│   │   ├── CartDrawer.tsx
+│   │   ├── ThemeProvider.tsx
+│   │   └── ThemeToggle.tsx
 │   ├── contexts/          # Context API
 │   │   ├── AuthContext.tsx
 │   │   └── CartContext.tsx
@@ -67,6 +70,7 @@ shared/
 - ✅ Histórico de pedidos com chaves dos jogos
 - ✅ Página de detalhes do jogo
 - ✅ Callback de pagamento do Mercado Pago
+- ✅ Dark Mode com alternância manual e sincronização localStorage
 
 ### Painel Administrativo
 - ✅ Dashboard com métricas e estatísticas
