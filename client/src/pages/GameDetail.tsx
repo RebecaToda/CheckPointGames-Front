@@ -1,32 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
-import { useRoute, useLocation } from 'wouter';
-import { Header } from '@/components/Header';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card } from '@/components/ui/card';
-import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
-import { Game } from '@shared/schema';
-import { ShoppingCart, ArrowLeft } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { useQuery } from "@tanstack/react-query";
+import { useRoute, useLocation } from "wouter";
+import { Header } from "@/components/Header";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card } from "@/components/ui/card";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import { Game } from "@shared/schema";
+import { ShoppingCart, ArrowLeft } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function GameDetail() {
-  const [, params] = useRoute('/game/:id');
+  const [, params] = useRoute("/game/:id");
   const [, setLocation] = useLocation();
   const { addItem } = useCart();
   const { toast } = useToast();
 
-  const { data: game, isLoading, error } = useQuery<Game>({
+  const {
+    data: game,
+    isLoading,
+    error,
+  } = useQuery<Game>({
     queryKey: [`/api/v1/games/showGamesById/${params?.id}`],
     enabled: !!params?.id,
   });
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(price);
   };
 
@@ -73,7 +77,7 @@ export default function GameDetail() {
             </AlertDescription>
           </Alert>
           <div className="text-center mt-6">
-            <Button onClick={() => setLocation('/')}>
+            <Button onClick={() => setLocation("/")}>
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
@@ -86,11 +90,11 @@ export default function GameDetail() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <div className="container mx-auto px-4 py-8">
         <Button
           variant="ghost"
-          onClick={() => setLocation('/')}
+          onClick={() => setLocation("/")}
           className="mb-6"
           data-testid="button-back"
         >
@@ -120,7 +124,10 @@ export default function GameDetail() {
             {game.screenshots && game.screenshots.length > 0 && (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
                 {game.screenshots.map((screenshot, index) => (
-                  <div key={index} className="aspect-video rounded-md overflow-hidden bg-muted">
+                  <div
+                    key={index}
+                    className="aspect-video rounded-md overflow-hidden bg-muted"
+                  >
                     <img
                       src={screenshot}
                       alt={`Screenshot ${index + 1}`}
@@ -133,8 +140,13 @@ export default function GameDetail() {
 
             <div className="space-y-6">
               <div>
-                <h2 className="text-xl font-heading font-semibold mb-3">Descrição</h2>
-                <p className="text-muted-foreground leading-relaxed" data-testid="text-description">
+                <h2 className="text-xl font-heading font-semibold mb-3">
+                  Descrição
+                </h2>
+                <p
+                  className="text-muted-foreground leading-relaxed"
+                  data-testid="text-description"
+                >
                   {game.description}
                 </p>
               </div>
@@ -153,9 +165,12 @@ export default function GameDetail() {
               )}
 
               <div className="bg-primary/5 border border-primary/20 rounded-md p-4">
-                <p className="text-sm font-semibold text-primary mb-1">Entrega Imediata</p>
+                <p className="text-sm font-semibold text-primary mb-1">
+                  Entrega Imediata
+                </p>
                 <p className="text-sm text-muted-foreground">
-                  Após a confirmação do pagamento, a chave do jogo será enviada automaticamente para seu email.
+                  Após a confirmação do pagamento, a chave do jogo será enviada
+                  automaticamente para seu email.
                 </p>
               </div>
             </div>
@@ -165,21 +180,41 @@ export default function GameDetail() {
             <Card className="p-6 sticky top-24">
               <div className="space-y-6">
                 <div>
-                  <h1 className="text-2xl font-heading font-bold mb-2" data-testid="text-game-title">
+                  <h1
+                    className="text-2xl font-heading font-bold mb-2"
+                    data-testid="text-game-title"
+                  >
                     {game.title}
                   </h1>
-                  <Badge variant="secondary" data-testid="badge-category">
-                    {game.category}
-                  </Badge>
+
+                  {/* --- ALTERAÇÃO AQUI: Exibe múltiplas categorias --- */}
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {game.category?.split(",").map((cat, index) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        data-testid={`badge-category-${index}`}
+                      >
+                        {cat.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                  {/* ------------------------------------------------ */}
                 </div>
 
                 <div>
                   {game.discount > 0 && (
-                    <p className="text-lg text-muted-foreground line-through mb-1" data-testid="text-original-price">
+                    <p
+                      className="text-lg text-muted-foreground line-through mb-1"
+                      data-testid="text-original-price"
+                    >
                       {formatPrice(game.price)}
                     </p>
                   )}
-                  <p className="text-3xl font-bold text-primary" data-testid="text-final-price">
+                  <p
+                    className="text-3xl font-bold text-primary"
+                    data-testid="text-final-price"
+                  >
                     {formatPrice(game.finalPrice || game.price)}
                   </p>
                 </div>

@@ -1,17 +1,18 @@
-import { Link, useLocation } from 'wouter';
-import { ShoppingCart, User, LogOut, LayoutDashboard } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCart } from '@/contexts/CartContext';
-import { ThemeToggle } from './ThemeToggle';
+import { Link, useLocation } from "wouter";
+import { ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
+import { ThemeToggle } from "./ThemeToggle";
+import { CartDrawer } from "./CartDrawer"; // <--- IMPORT NOVO
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 
 export function Header() {
   const [location] = useLocation();
@@ -23,7 +24,7 @@ export function Header() {
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between gap-4">
           <Link href="/" data-testid="link-home">
-            <div className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-3 py-2 -ml-3">
+            <div className="flex items-center gap-3 hover-elevate active-elevate-2 rounded-md px-3 py-2 -ml-3 cursor-pointer">
               <div className="text-2xl font-heading font-bold text-primary">
                 CheckPoint Games
               </div>
@@ -32,16 +33,16 @@ export function Header() {
 
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            
-            {!location.startsWith('/admin') && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative"
-                asChild
-                data-testid="button-cart"
-              >
-                <Link href="/cart">
+
+            {!location.startsWith("/admin") && (
+              /* AQUI ESTÁ A MUDANÇA: Envolvemos o botão com o CartDrawer */
+              <CartDrawer>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="relative"
+                  data-testid="button-cart"
+                >
                   <ShoppingCart className="h-5 w-5" />
                   {itemCount > 0 && (
                     <Badge
@@ -51,23 +52,33 @@ export function Header() {
                       {itemCount}
                     </Badge>
                   )}
-                </Link>
-              </Button>
+                </Button>
+              </CartDrawer>
             )}
 
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" data-testid="button-user-menu">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid="button-user-menu"
+                  >
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <div className="px-2 py-1.5">
-                    <p className="text-sm font-medium" data-testid="text-user-name">
+                    <p
+                      className="text-sm font-medium"
+                      data-testid="text-user-name"
+                    >
                       {user?.name}
                     </p>
-                    <p className="text-xs text-muted-foreground" data-testid="text-user-email">
+                    <p
+                      className="text-xs text-muted-foreground"
+                      data-testid="text-user-email"
+                    >
                       {user?.email}
                     </p>
                   </div>
@@ -89,7 +100,10 @@ export function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logout} data-testid="button-logout">
+                  <DropdownMenuItem
+                    onClick={logout}
+                    data-testid="button-logout"
+                  >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sair
                   </DropdownMenuItem>

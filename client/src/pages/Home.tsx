@@ -1,41 +1,55 @@
-import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Header } from '@/components/Header';
-import { GameCard } from '@/components/GameCard';
-import { Filters } from '@/components/Filters';
-import { Skeleton } from '@/components/ui/skeleton';
-import { api } from '@/lib/api';
-import { Game, GameFilters } from '@shared/schema';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Header } from "@/components/Header";
+import { GameCard } from "@/components/GameCard";
+import { Filters } from "@/components/Filters";
+import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/lib/api";
+import { Game, GameFilters } from "@shared/schema";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function Home() {
   const [filters, setFilters] = useState<GameFilters>({});
 
-  const { data: games, isLoading, error } = useQuery<Game[]>({
-    queryKey: ['/api/v1/games/showActivityGames'],
+  const {
+    data: games,
+    isLoading,
+    error,
+  } = useQuery<Game[]>({
+    queryKey: ["/api/v1/games/showActivityGames"],
   });
 
   const categories = games
-    ? Array.from(new Set(games.map(g => g.category)))
+    ? Array.from(
+        new Set(
+          games.flatMap((g) =>
+            g.category ? g.category.split(",").map((c) => c.trim()) : []
+          )
+        )
+      ).sort()
     : [];
 
-  const filteredGames = games?.filter(game => {
-    if (filters.search && !game.title.toLowerCase().includes(filters.search.toLowerCase())) {
-      return false;
-    }
-    if (filters.category && game.category !== filters.category) {
-      return false;
-    }
-    const price = game.finalPrice || game.price;
-    if (filters.minPrice !== undefined && price < filters.minPrice) {
-      return false;
-    }
-    if (filters.maxPrice !== undefined && price > filters.maxPrice) {
-      return false;
-    }
-    return true;
-  }) || [];
+  const filteredGames =
+    games?.filter((game) => {
+      if (
+        filters.search &&
+        !game.title.toLowerCase().includes(filters.search.toLowerCase())
+      ) {
+        return false;
+      }
+      if (filters.category && !game.category?.includes(filters.category)) {
+        return false;
+      }
+      const price = game.finalPrice || game.price;
+      if (filters.minPrice !== undefined && price < filters.minPrice) {
+        return false;
+      }
+      if (filters.maxPrice !== undefined && price > filters.maxPrice) {
+        return false;
+      }
+      return true;
+    }) || [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -45,11 +59,15 @@ export default function Home() {
       <div className="relative bg-gradient-to-br from-primary/20 via-background to-background border-b">
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl">
-            <h1 className="font-heading font-bold text-4xl md:text-5xl lg:text-6xl mb-4" data-testid="text-hero-title">
+            <h1
+              className="font-heading font-bold text-4xl md:text-5xl lg:text-6xl mb-4"
+              data-testid="text-hero-title"
+            >
               Sua Loja de Jogos Digitais
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground mb-6">
-              Keys de jogos com entrega imediata e pagamento seguro via Mercado Pago
+              Keys de jogos com entrega imediata e pagamento seguro via Mercado
+              Pago
             </p>
             <div className="flex flex-wrap gap-4 text-sm">
               <div className="flex items-center gap-2 bg-card px-4 py-2 rounded-md">
@@ -95,7 +113,7 @@ export default function Home() {
               <h2 className="text-2xl font-heading font-bold">
                 {filters.search || filters.category
                   ? `Resultados (${filteredGames.length})`
-                  : 'Todos os Jogos'}
+                  : "Todos os Jogos"}
               </h2>
             </div>
 

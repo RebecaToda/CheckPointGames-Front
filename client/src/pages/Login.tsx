@@ -1,15 +1,33 @@
-import { useState } from 'react';
-import { useLocation } from 'wouter';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { LoginInput, loginSchema, RegisterInput, registerSchema } from '@shared/schema';
-import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Link } from 'wouter';
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  LoginInput,
+  loginSchema,
+  RegisterInput,
+  registerSchema,
+} from "@shared/schema";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "wouter";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -19,17 +37,18 @@ export default function Login() {
   const loginForm = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
   });
 
   const registerForm = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      password: '',
+      name: "",
+      email: "",
+      password: "",
+      number: "",
     },
   });
 
@@ -37,7 +56,7 @@ export default function Login() {
     setIsLoading(true);
     try {
       await login(data);
-      setLocation('/');
+      setLocation("/");
     } catch (error) {
       console.error(error);
     } finally {
@@ -48,13 +67,34 @@ export default function Login() {
   const onRegister = async (data: RegisterInput) => {
     setIsLoading(true);
     try {
+      // Tenta criar a conta no backend
       await register(data);
-      registerForm.reset();
+
+      // Faz o login automático imediatamente
+      await login({
+        email: data.email,
+        password: data.password,
+      });
+
+      // Redireciona para a Home
+      setLocation("/");
     } catch (error) {
       console.error(error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Função para aplicar a máscara de telefone
+  const formatPhoneNumber = (value: string) => {
+    // Remove tudo o que não é dígito
+    const numbers = value.replace(/\D/g, "");
+
+    // Aplica a máscara (XX) XXXXX-XXXX
+    return numbers
+      .replace(/^(\d{2})(\d)/g, "($1) $2") // Coloca parênteses
+      .replace(/(\d)(\d{4})$/, "$1-$2") // Coloca o hífen
+      .slice(0, 15); // Limita ao tamanho máximo
   };
 
   return (
@@ -81,13 +121,20 @@ export default function Login() {
           <CardContent>
             <Tabs defaultValue="login">
               <TabsList className="grid w-full grid-cols-2 mb-6">
-                <TabsTrigger value="login" data-testid="tab-login">Login</TabsTrigger>
-                <TabsTrigger value="register" data-testid="tab-register">Registrar</TabsTrigger>
+                <TabsTrigger value="login" data-testid="tab-login">
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="register" data-testid="tab-register">
+                  Registrar
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
                 <Form {...loginForm}>
-                  <form onSubmit={loginForm.handleSubmit(onLogin)} className="space-y-4">
+                  <form
+                    onSubmit={loginForm.handleSubmit(onLogin)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={loginForm.control}
                       name="email"
@@ -132,7 +179,7 @@ export default function Login() {
                       disabled={isLoading}
                       data-testid="button-submit-login"
                     >
-                      {isLoading ? 'Entrando...' : 'Entrar'}
+                      {isLoading ? "Entrando..." : "Entrar"}
                     </Button>
                   </form>
                 </Form>
@@ -140,7 +187,10 @@ export default function Login() {
 
               <TabsContent value="register">
                 <Form {...registerForm}>
-                  <form onSubmit={registerForm.handleSubmit(onRegister)} className="space-y-4">
+                  <form
+                    onSubmit={registerForm.handleSubmit(onRegister)}
+                    className="space-y-4"
+                  >
                     <FormField
                       control={registerForm.control}
                       name="name"
@@ -177,7 +227,31 @@ export default function Login() {
                         </FormItem>
                       )}
                     />
-
+                    {/* CAMPO DE TELEFONE COM MÁSCARA */}
+                    <FormField
+                      control={registerForm.control}
+                      name="number"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Telefone</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="(11) 99999-9999"
+                              data-testid="input-register-phone"
+                              {...field}
+                              onChange={(e) => {
+                                const formatted = formatPhoneNumber(
+                                  e.target.value
+                                );
+                                field.onChange(formatted);
+                              }}
+                              maxLength={15}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={registerForm.control}
                       name="password"
@@ -203,7 +277,7 @@ export default function Login() {
                       disabled={isLoading}
                       data-testid="button-submit-register"
                     >
-                      {isLoading ? 'Criando conta...' : 'Criar conta'}
+                      {isLoading ? "Criando conta..." : "Criar conta"}
                     </Button>
                   </form>
                 </Form>

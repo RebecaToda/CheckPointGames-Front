@@ -19,6 +19,7 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+  number: z.string().min(8, "Telefone é obrigatório"), // Campo adicionado
 });
 
 export type User = z.infer<typeof userSchema>;
@@ -32,6 +33,7 @@ export const gameSchema = z.object({
   description: z.string(),
   price: z.number(),
   discount: z.number().default(0), // percentual de desconto
+  inventory: z.number().default(0), // estoque
   finalPrice: z.number(), // preço com desconto aplicado
   category: z.string(),
   coverImage: z.string(),
@@ -45,6 +47,11 @@ export const createGameSchema = z.object({
   description: z.string().min(10, "Descrição deve ter no mínimo 10 caracteres"),
   price: z.number().positive("Preço deve ser maior que zero"),
   discount: z.number().min(0).max(100).default(0),
+  inventory: z
+    .number()
+    .int()
+    .min(0, "Estoque não pode ser negativo")
+    .default(0), // Campo adicionado
   category: z.string().min(1, "Categoria é obrigatória"),
   coverImage: z.string().url("URL da imagem inválida"),
   screenshots: z.array(z.string().url()).optional(),
@@ -96,10 +103,14 @@ export const orderSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-  items: z.array(z.object({
-    gameId: z.number(),
-    quantity: z.number().positive(),
-  })).min(1, "Pedido deve ter pelo menos um item"),
+  items: z
+    .array(
+      z.object({
+        gameId: z.number(),
+        quantity: z.number().positive(),
+      })
+    )
+    .min(1, "Pedido deve ter pelo menos um item"),
 });
 
 export type Order = z.infer<typeof orderSchema>;

@@ -1,11 +1,11 @@
-import { Game } from '@shared/schema';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ShoppingCart } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
-import { Link } from 'wouter';
+import { Game } from "@shared/schema";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 
 interface GameCardProps {
   game: Game;
@@ -25,9 +25,9 @@ export function GameCard({ game }: GameCardProps) {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(price);
   };
 
@@ -62,19 +62,35 @@ export function GameCard({ game }: GameCardProps) {
             >
               {game.title}
             </h3>
-            <Badge variant="secondary" className="text-xs" data-testid={`badge-category-${game.id}`}>
-              {game.category}
-            </Badge>
+
+            <div className="flex flex-wrap gap-1 mt-1">
+              {game.category?.split(",").map((cat, index) => (
+                <Badge
+                  key={index}
+                  variant="secondary"
+                  className="text-xs"
+                  data-testid={`badge-category-${game.id}-${index}`}
+                >
+                  {cat.trim()}
+                </Badge>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-end justify-between gap-2">
             <div>
               {game.discount > 0 && (
-                <p className="text-sm text-muted-foreground line-through" data-testid={`text-original-price-${game.id}`}>
+                <p
+                  className="text-sm text-muted-foreground line-through"
+                  data-testid={`text-original-price-${game.id}`}
+                >
                   {formatPrice(game.price)}
                 </p>
               )}
-              <p className="text-xl font-bold text-primary" data-testid={`text-final-price-${game.id}`}>
+              <p
+                className="text-xl font-bold text-primary"
+                data-testid={`text-final-price-${game.id}`}
+              >
                 {formatPrice(game.finalPrice || game.price)}
               </p>
             </div>
