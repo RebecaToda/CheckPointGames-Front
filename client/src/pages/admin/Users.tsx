@@ -1,8 +1,8 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,56 +10,60 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { User } from '@shared/schema';
-import { api } from '@/lib/api';
-import { queryClient } from '@/lib/queryClient';
-import { useToast } from '@/hooks/use-toast';
-import { Ban, CheckCircle, Shield } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+} from "@/components/ui/table";
+import { User } from "@shared/schema";
+import { api } from "@/lib/api";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { Ban, CheckCircle, Shield } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminUsers() {
   const { toast } = useToast();
 
   const { data: users, isLoading } = useQuery<User[]>({
-    queryKey: ['/api/v1/users/all'],
+    queryKey: ["/api/v1/users/showUsers"],
   });
 
   const toggleStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: number }) =>
       api.put(`/api/v1/users/updateStatus/${id}`, { status }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/v1/users/all'] });
-      toast({ title: 'Status atualizado!' });
+      queryClient.invalidateQueries({ queryKey: ["/api/v1/users/showUsers"] });
+      toast({ title: "Status atualizado!" });
     },
     onError: (error: any) => {
       toast({
-        variant: 'destructive',
-        title: 'Erro ao atualizar status',
+        variant: "destructive",
+        title: "Erro ao atualizar status",
         description: error.response?.data?.message,
       });
     },
   });
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return '-';
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
+    if (!dateString) return "-";
+    return new Date(dateString).toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
     });
   };
 
-  const statsActive = users?.filter(u => u.status === 0).length || 0;
-  const statsBlocked = users?.filter(u => u.status === 1).length || 0;
-  const statsAdmin = users?.filter(u => u.isAdmin).length || 0;
+  const statsActive = users?.filter((u) => u.status === 0).length || 0;
+  const statsBlocked = users?.filter((u) => u.status === 1).length || 0;
+  const statsAdmin = users?.filter((u) => u.isAdmin).length || 0;
 
   return (
     <AdminLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-heading font-bold">Gestão de Usuários</h1>
-          <p className="text-muted-foreground">Visualize e gerencie usuários do sistema</p>
+          <h1 className="text-3xl font-heading font-bold">
+            Gestão de Usuários
+          </h1>
+          <p className="text-muted-foreground">
+            Visualize e gerencie usuários do sistema
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -67,7 +71,10 @@ export default function AdminUsers() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Usuários Ativos</p>
-                <p className="text-2xl font-bold text-success" data-testid="text-users-active">
+                <p
+                  className="text-2xl font-bold text-success"
+                  data-testid="text-users-active"
+                >
                   {statsActive}
                 </p>
               </div>
@@ -77,8 +84,13 @@ export default function AdminUsers() {
           <Card className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground">Usuários Bloqueados</p>
-                <p className="text-2xl font-bold text-destructive" data-testid="text-users-blocked">
+                <p className="text-sm text-muted-foreground">
+                  Usuários Bloqueados
+                </p>
+                <p
+                  className="text-2xl font-bold text-destructive"
+                  data-testid="text-users-blocked"
+                >
                   {statsBlocked}
                 </p>
               </div>
@@ -89,7 +101,10 @@ export default function AdminUsers() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">Administradores</p>
-                <p className="text-2xl font-bold text-primary" data-testid="text-users-admin">
+                <p
+                  className="text-2xl font-bold text-primary"
+                  data-testid="text-users-admin"
+                >
                   {statsAdmin}
                 </p>
               </div>
@@ -129,7 +144,10 @@ export default function AdminUsers() {
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
                       {user.isAdmin ? (
-                        <Badge variant="default" className="flex items-center gap-1 w-fit">
+                        <Badge
+                          variant="default"
+                          className="flex items-center gap-1 w-fit"
+                        >
                           <Shield className="h-3 w-3" />
                           Admin
                         </Badge>
@@ -138,8 +156,10 @@ export default function AdminUsers() {
                       )}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={user.status === 0 ? 'default' : 'destructive'}>
-                        {user.status === 0 ? 'Ativo' : 'Bloqueado'}
+                      <Badge
+                        variant={user.status === 0 ? "default" : "destructive"}
+                      >
+                        {user.status === 0 ? "Ativo" : "Bloqueado"}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
@@ -155,7 +175,7 @@ export default function AdminUsers() {
                           }
                           data-testid={`button-toggle-status-${user.id}`}
                         >
-                          {user.status === 0 ? 'Bloquear' : 'Desbloquear'}
+                          {user.status === 0 ? "Bloquear" : "Desbloquear"}
                         </Button>
                       )}
                     </TableCell>
