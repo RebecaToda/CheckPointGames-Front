@@ -1,73 +1,87 @@
-import { useQuery } from '@tanstack/react-query';
-import { AdminLayout } from '@/components/admin/AdminLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gamepad2, Package, Key, Users, TrendingUp, DollarSign } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useQuery } from "@tanstack/react-query";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Gamepad2,
+  Package,
+  Key,
+  Users,
+  TrendingUp,
+  DollarSign,
+} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboard() {
+  // 1. Jogos (Link estava certo, mantido)
   const { data: games, isLoading: gamesLoading } = useQuery({
-    queryKey: ['/api/v1/games/showGames'],
+    queryKey: ["/api/v1/games/showGames"],
   });
 
+  // 2. Pedidos (CORRIGIDO: de /all para /showOrders)
   const { data: orders, isLoading: ordersLoading } = useQuery({
-    queryKey: ['/api/v1/orders/all'],
+    queryKey: ["/api/v1/orders/showOrders"],
   });
 
+  // 3. Chaves (CORRIGIDO: de /keys/all para /gamekeys/showGameKeys)
   const { data: keys, isLoading: keysLoading } = useQuery({
-    queryKey: ['/api/v1/keys/all'],
+    queryKey: ["/api/v1/gamekeys/showGameKeys"],
   });
 
+  // 4. Usuários (CORRIGIDO: de /all para /showUsers)
   const { data: users, isLoading: usersLoading } = useQuery({
-    queryKey: ['/api/v1/users/all'],
+    queryKey: ["/api/v1/users/showUsers"],
   });
 
   const stats = [
     {
-      title: 'Total de Jogos',
+      title: "Total de Jogos",
       value: games?.length || 0,
       icon: Gamepad2,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      color: "text-primary",
+      bgColor: "bg-primary/10",
       loading: gamesLoading,
     },
     {
-      title: 'Pedidos',
+      title: "Pedidos",
       value: orders?.length || 0,
       icon: Package,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-600/10',
+      color: "text-blue-600",
+      bgColor: "bg-blue-600/10",
       loading: ordersLoading,
     },
     {
-      title: 'Chaves Cadastradas',
+      title: "Chaves Cadastradas",
       value: keys?.length || 0,
       icon: Key,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-600/10',
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-600/10",
       loading: keysLoading,
     },
     {
-      title: 'Usuários',
+      title: "Usuários",
       value: users?.length || 0,
       icon: Users,
-      color: 'text-green-600',
-      bgColor: 'bg-green-600/10',
+      color: "text-green-600",
+      bgColor: "bg-green-600/10",
       loading: usersLoading,
     },
   ];
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(price);
   };
 
-  const totalRevenue = orders?.reduce((sum: number, order: any) => {
-    return order.status === 1 ? sum + order.total : sum;
-  }, 0) || 0;
+  // Calcula a receita somando o "total" dos pedidos com status 1 (Finalizado)
+  const totalRevenue =
+    orders?.reduce((sum: number, order: any) => {
+      return order.status === 1 ? sum + order.total : sum;
+    }, 0) || 0;
 
-  const completedOrders = orders?.filter((order: any) => order.status === 1).length || 0;
+  const completedOrders =
+    orders?.filter((order: any) => order.status === 1).length || 0;
 
   return (
     <AdminLayout>
@@ -96,7 +110,12 @@ export default function AdminDashboard() {
                   {stat.loading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    <div className="text-2xl font-bold" data-testid={`stat-${stat.title.toLowerCase().replace(/\s+/g, '-')}`}>
+                    <div
+                      className="text-2xl font-bold"
+                      data-testid={`stat-${stat.title
+                        .toLowerCase()
+                        .replace(/\s+/g, "-")}`}
+                    >
                       {stat.value}
                     </div>
                   )}
@@ -118,7 +137,10 @@ export default function AdminDashboard() {
               {ordersLoading ? (
                 <Skeleton className="h-10 w-32" />
               ) : (
-                <div className="text-3xl font-bold text-green-600" data-testid="text-total-revenue">
+                <div
+                  className="text-3xl font-bold text-green-600"
+                  data-testid="text-total-revenue"
+                >
                   {formatPrice(totalRevenue)}
                 </div>
               )}
@@ -139,7 +161,10 @@ export default function AdminDashboard() {
               {ordersLoading ? (
                 <Skeleton className="h-10 w-24" />
               ) : (
-                <div className="text-3xl font-bold" data-testid="text-conversion-rate">
+                <div
+                  className="text-3xl font-bold"
+                  data-testid="text-conversion-rate"
+                >
                   {orders && orders.length > 0
                     ? Math.round((completedOrders / orders.length) * 100)
                     : 0}
@@ -178,7 +203,10 @@ export default function AdminDashboard() {
                     <div>
                       <p className="font-medium">Pedido #{order.id}</p>
                       <p className="text-sm text-muted-foreground">
-                        {order.userName || 'Cliente'}
+                        {/* Tenta mostrar o nome do cliente se existir */}
+                        {order.costumer
+                          ? order.costumer.name
+                          : order.userName || "Cliente"}
                       </p>
                     </div>
                     <div className="text-right">
@@ -186,9 +214,9 @@ export default function AdminDashboard() {
                         {formatPrice(order.total)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {order.status === 0 && 'Pendente'}
-                        {order.status === 1 && 'Finalizado'}
-                        {order.status === 2 && 'Cancelado'}
+                        {order.status === 0 && "Pendente"}
+                        {order.status === 1 && "Finalizado"}
+                        {order.status === 2 && "Cancelado"}
                       </p>
                     </div>
                   </div>
