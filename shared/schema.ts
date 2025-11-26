@@ -1,13 +1,12 @@
 import { z } from "zod";
 
-// User Schemas
 export const userSchema = z.object({
   id: z.number(),
   name: z.string(),
   email: z.string().email(),
   password: z.string(),
   isAdmin: z.boolean().default(false),
-  status: z.number(), // 0 = ativo, 1 = bloqueado
+  status: z.number(),
 });
 
 export const loginSchema = z.object({
@@ -19,27 +18,26 @@ export const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter no mínimo 2 caracteres"),
   email: z.string().email("Email inválido"),
   password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
-  number: z.string().min(8, "Telefone é obrigatório"), // Campo adicionado
+  number: z.string().min(8, "Telefone é obrigatório"),
 });
 
 export type User = z.infer<typeof userSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
 
-// Game Schemas
 export const gameSchema = z.object({
   id: z.number(),
   title: z.string(),
   description: z.string(),
   price: z.number(),
-  discount: z.number().default(0), // percentual de desconto
-  inventory: z.number().default(0), // estoque
-  finalPrice: z.number(), // preço com desconto aplicado
+  discount: z.number().default(0),
+  inventory: z.number().default(0),
+  finalPrice: z.number(),
   category: z.string(),
   coverImage: z.string(),
   screenshots: z.array(z.string()).optional(),
   platform: z.array(z.string()).optional(),
-  status: z.number(), // 0 = ativo, 1 = bloqueado
+  status: z.number(),
 });
 
 export const createGameSchema = z.object({
@@ -51,7 +49,7 @@ export const createGameSchema = z.object({
     .number()
     .int()
     .min(0, "Estoque não pode ser negativo")
-    .default(0), // Campo adicionado
+    .default(0),
   category: z.string().min(1, "Categoria é obrigatória"),
   coverImage: z.string().url("URL da imagem inválida"),
   screenshots: z.array(z.string().url()).optional(),
@@ -64,13 +62,12 @@ export type Game = z.infer<typeof gameSchema>;
 export type CreateGameInput = z.infer<typeof createGameSchema>;
 export type UpdateGameInput = z.infer<typeof updateGameSchema>;
 
-// Game Key Schemas
 export const gameKeySchema = z.object({
   id: z.number(),
   gameId: z.number(),
   gameTitle: z.string().optional(),
   key: z.string(),
-  status: z.number(), // 0 = ativo, 1 = usado, 2 = cancelado
+  status: z.number(),
   createdAt: z.string().optional(),
 });
 
@@ -82,7 +79,6 @@ export const createGameKeySchema = z.object({
 export type GameKey = z.infer<typeof gameKeySchema>;
 export type CreateGameKeyInput = z.infer<typeof createGameKeySchema>;
 
-// Order Schemas
 export const orderItemSchema = z.object({
   gameId: z.number(),
   gameTitle: z.string(),
@@ -92,11 +88,12 @@ export const orderItemSchema = z.object({
 
 export const orderSchema = z.object({
   id: z.number(),
-  userId: z.number(),
+  userId: z.number().optional(),
+  costumer: userSchema.optional(),
   userName: z.string().optional(),
   items: z.array(orderItemSchema),
   total: z.number(),
-  status: z.number(), // 0 = pendente, 1 = finalizado, 2 = cancelado
+  status: z.number(),
   paymentLink: z.string().optional(),
   createdAt: z.string(),
   keys: z.array(gameKeySchema).optional(),
@@ -117,13 +114,11 @@ export type Order = z.infer<typeof orderSchema>;
 export type OrderItem = z.infer<typeof orderItemSchema>;
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
 
-// Cart Item (frontend only)
 export interface CartItem {
   game: Game;
   quantity: number;
 }
 
-// API Response Types
 export interface ApiResponse<T = any> {
   status: number;
   data?: T;
@@ -144,7 +139,6 @@ export interface CreateOrderResponse {
   message: string;
 }
 
-// Filter types
 export interface GameFilters {
   category?: string;
   minPrice?: number;

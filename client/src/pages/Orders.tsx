@@ -34,7 +34,7 @@ export default function Orders() {
     isLoading,
     error,
   } = useQuery<Order[]>({
-    queryKey: ["/api/v1/orders/user"], // Chama a rota de pedidos do usuário
+    queryKey: ["/api/v1/orders/user"],
     enabled: isAuthenticated,
   });
 
@@ -46,13 +46,10 @@ export default function Orders() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!dateString) return "-";
+    const datePart = dateString.toString().split("T")[0];
+    const [year, month, day] = datePart.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   const getStatusInfo = (status: number) => {
