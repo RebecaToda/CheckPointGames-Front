@@ -2,10 +2,11 @@ import { Link, useLocation } from "wouter";
 import { ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Import novo
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { ThemeToggle } from "./ThemeToggle";
-import { CartDrawer } from "./CartDrawer"; // <--- IMPORT NOVO
+import { CartDrawer } from "./CartDrawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,15 @@ export function Header() {
   const [location] = useLocation();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { itemCount } = useCart();
+
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,7 +45,6 @@ export function Header() {
             <ThemeToggle />
 
             {!location.startsWith("/admin") && (
-              /* AQUI ESTÁ A MUDANÇA: Envolvemos o botão com o CartDrawer */
               <CartDrawer>
                 <Button
                   variant="ghost"
@@ -62,31 +71,54 @@ export function Header() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="rounded-full"
                     data-testid="button-user-menu"
                   >
-                    <User className="h-5 w-5" />
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user?.profileImage} alt={user?.name} />
+                      <AvatarFallback>
+                        {user?.name ? (
+                          getInitials(user.name)
+                        ) : (
+                          <User className="h-4 w-4" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
                   <div className="px-2 py-1.5">
                     <p
-                      className="text-sm font-medium"
+                      className="text-sm font-medium truncate"
                       data-testid="text-user-name"
                     >
                       {user?.name}
                     </p>
                     <p
-                      className="text-xs text-muted-foreground"
+                      className="text-xs text-muted-foreground truncate"
                       data-testid="text-user-email"
                     >
                       {user?.email}
                     </p>
                   </div>
                   <DropdownMenuSeparator />
+
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="cursor-pointer">
+                      <User className="mr-2 h-4 w-4" />
+                      Meu Perfil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+
                   {isAdmin && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link href="/admin" data-testid="link-admin">
+                        <Link
+                          href="/admin"
+                          data-testid="link-admin"
+                          className="cursor-pointer"
+                        >
                           <LayoutDashboard className="mr-2 h-4 w-4" />
                           Painel Admin
                         </Link>
@@ -95,7 +127,11 @@ export function Header() {
                     </>
                   )}
                   <DropdownMenuItem asChild>
-                    <Link href="/orders" data-testid="link-orders">
+                    <Link
+                      href="/orders"
+                      data-testid="link-orders"
+                      className="cursor-pointer"
+                    >
                       Meus Pedidos
                     </Link>
                   </DropdownMenuItem>
@@ -103,6 +139,7 @@ export function Header() {
                   <DropdownMenuItem
                     onClick={logout}
                     data-testid="button-logout"
+                    className="cursor-pointer"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
                     Sair

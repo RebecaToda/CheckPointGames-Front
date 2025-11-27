@@ -15,6 +15,7 @@ import Checkout from "@/pages/Checkout";
 import Orders from "@/pages/Orders";
 import PaymentCallback from "@/pages/PaymentCallback";
 import NotFound from "@/pages/not-found";
+import Profile from "@/pages/Profile";
 
 // Admin Pages
 import AdminDashboard from "@/pages/admin/Dashboard";
@@ -33,6 +34,7 @@ function Router() {
       <Route path="/checkout" component={Checkout} />
       <Route path="/cart" component={Checkout} />
       <Route path="/orders" component={Orders} />
+      <Route path="/profile" component={Profile} />
       <Route path="/payment/callback" component={PaymentCallback} />
 
       {/* Admin Routes */}

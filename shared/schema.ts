@@ -7,6 +7,9 @@ export const userSchema = z.object({
   password: z.string(),
   isAdmin: z.boolean().default(false),
   status: z.number(),
+  age: z.number().optional(),
+  number: z.string().optional(),
+  profileImage: z.string().optional(),
 });
 
 export const loginSchema = z.object({
