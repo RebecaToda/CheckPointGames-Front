@@ -2,7 +2,7 @@ import { Link, useLocation } from "wouter";
 import { ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Import novo
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCart } from "@/contexts/CartContext";
 import { ThemeToggle } from "./ThemeToggle";
@@ -20,6 +20,7 @@ export function Header() {
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const { itemCount } = useCart();
 
+  // Função para pegar as iniciais do nome
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -52,7 +53,8 @@ export function Header() {
                   className="relative"
                   data-testid="button-cart"
                 >
-                  <ShoppingCart className="h-5 w-5" />
+                  {/* AUMENTEI O ÍCONE DO CARRINHO AQUI (h-6 w-6) */}
+                  <ShoppingCart className="h-6 w-6" />
                   {itemCount > 0 && (
                     <Badge
                       className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
@@ -68,19 +70,22 @@ export function Header() {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
+                  {/* AUMENTEI O AVATAR TAMBÉM (h-10 w-10) PARA FICAR PROPORCIONAL */}
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="rounded-full"
+                    className="rounded-full h-10 w-10"
                     data-testid="button-user-menu"
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-9 w-9">
+                      {" "}
+                      {/* Aumentei a imagem interna para h-9 w-9 */}
                       <AvatarImage src={user?.profileImage} alt={user?.name} />
                       <AvatarFallback>
                         {user?.name ? (
                           getInitials(user.name)
                         ) : (
-                          <User className="h-4 w-4" />
+                          <User className="h-5 w-5" />
                         )}
                       </AvatarFallback>
                     </Avatar>
@@ -105,7 +110,6 @@ export function Header() {
 
                   <DropdownMenuItem asChild>
                     <Link href="/profile" className="cursor-pointer">
-                      <User className="mr-2 h-4 w-4" />
                       Meu Perfil
                     </Link>
                   </DropdownMenuItem>
@@ -119,7 +123,6 @@ export function Header() {
                           data-testid="link-admin"
                           className="cursor-pointer"
                         >
-                          <LayoutDashboard className="mr-2 h-4 w-4" />
                           Painel Admin
                         </Link>
                       </DropdownMenuItem>

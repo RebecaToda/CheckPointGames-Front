@@ -82,6 +82,7 @@ const formatPhoneNumber = (value: string) => {
 };
 
 const calculateAge = (dateString: string) => {
+  if (!dateString) return null;
   const today = new Date();
   const birthDate = new Date(dateString);
   let age = today.getFullYear() - birthDate.getFullYear();
@@ -93,7 +94,7 @@ const calculateAge = (dateString: string) => {
 };
 
 export default function Profile() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -115,6 +116,9 @@ export default function Profile() {
     },
   });
 
+  const watchedBirthDate = form.watch("birthDate");
+  const realTimeAge = watchedBirthDate ? calculateAge(watchedBirthDate) : null;
+
   useEffect(() => {
     if (!isAuthenticated) {
       setLocation("/login");
@@ -125,7 +129,7 @@ export default function Profile() {
         name: user.name,
         email: user.email,
         number: user.number || "",
-        birthDate: "",
+        birthDate: (user as any).birthDate || "",
         newPassword: "",
         confirmNewPassword: "",
         currentPassword: "",
@@ -134,12 +138,10 @@ export default function Profile() {
     }
   }, [user, isAuthenticated, form, setLocation]);
 
-  // Função para lidar com o upload da imagem
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        // Limite de 5MB
         toast({
           variant: "destructive",
           title: "Arquivo muito grande",
@@ -147,7 +149,6 @@ export default function Profile() {
         });
         return;
       }
-
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreviewImage(reader.result as string);
@@ -187,7 +188,8 @@ export default function Profile() {
 
       let ageToSave = user.age || 0;
       if (data.birthDate) {
-        ageToSave = calculateAge(data.birthDate);
+        const calc = calculateAge(data.birthDate);
+        if (calc !== null) ageToSave = calc;
       }
 
       const payload = {
@@ -197,29 +199,37 @@ export default function Profile() {
         number: data.number,
         password: passwordToSave,
         age: ageToSave,
-        profileImage: previewImage, // Envia a imagem em Base64
+        birthDate: data.birthDate,
+        profileImage: previewImage,
         function: user.isAdmin ? 1 : 0,
         status: user.status || 0,
       };
 
       await api.post("/api/v1/users/updateUser", payload);
 
-      const updatedUser = {
+      const updatedUserData = {
         ...user,
         ...data,
         age: ageToSave,
         profileImage: previewImage,
+        birthDate: data.birthDate,
       };
+      delete updatedUserData.newPassword;
       // @ts-ignore
-      delete updatedUser.password;
-      localStorage.setItem("user", JSON.stringify(updatedUser));
+      delete updatedUserData.confirmNewPassword;
+      // @ts-ignore
+      delete updatedUserData.currentPassword;
+
+      updateUser(updatedUserData);
 
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram salvas com sucesso.",
       });
 
-      window.location.reload();
+      form.setValue("currentPassword", "");
+      form.setValue("newPassword", "");
+      form.setValue("confirmNewPassword", "");
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -245,7 +255,6 @@ export default function Profile() {
           <Card>
             <CardHeader>
               <div className="flex flex-col sm:flex-row items-center gap-6">
-                {/* ÁREA DA FOTO */}
                 <div
                   className="relative group cursor-pointer"
                   onClick={triggerFileInput}
@@ -271,11 +280,13 @@ export default function Profile() {
                 <div className="text-center sm:text-left">
                   <CardTitle className="text-2xl">{user.name}</CardTitle>
                   <CardDesc>{user.email}</CardDesc>
-                  {user.age ? (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Idade: {user.age} anos
-                    </p>
-                  ) : null}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {realTimeAge !== null
+                      ? `${realTimeAge} anos`
+                      : user.age
+                      ? `${user.age} anos`
+                      : ""}
+                  </p>
                 </div>
                 {user.isAdmin && (
                   <div className="sm:ml-auto">
@@ -365,9 +376,6 @@ export default function Profile() {
                               <Input type="date" className="pl-9" {...field} />
                             </div>
                           </FormControl>
-                          <FormDescription>
-                            Sua idade será calculada automaticamente.
-                          </FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
