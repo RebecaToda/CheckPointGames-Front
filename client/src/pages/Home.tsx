@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/Header";
 import { GameCard } from "@/components/GameCard";
 import { Filters } from "@/components/Filters";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/lib/api";
 import { Game, GameFilters } from "@shared/schema";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 
 export default function Home() {
-  const [filters, setFilters] = useState<GameFilters>({});
+  const [filters, setFilters] = useState<GameFilters>({ sort: "az" });
 
   const {
     data: games,
@@ -38,9 +37,11 @@ export default function Home() {
       ) {
         return false;
       }
+
       if (filters.category && !game.category?.includes(filters.category)) {
         return false;
       }
+
       const price = game.finalPrice || game.price;
       if (filters.minPrice !== undefined && price < filters.minPrice) {
         return false;
@@ -51,11 +52,27 @@ export default function Home() {
       return true;
     }) || [];
 
+  const sortedGames = [...filteredGames].sort((a, b) => {
+    const priceA = a.finalPrice || a.price;
+    const priceB = b.finalPrice || b.price;
+
+    switch (filters.sort) {
+      case "za":
+        return b.title.localeCompare(a.title);
+      case "price_asc":
+        return priceA - priceB;
+      case "price_desc":
+        return priceB - priceA;
+      case "az":
+      default:
+        return a.title.localeCompare(b.title);
+    }
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-primary/20 via-background to-background border-b">
         <div className="container mx-auto px-4 py-16 md:py-24">
           <div className="max-w-3xl">
@@ -87,18 +104,20 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filters Sidebar */}
           <aside className="lg:w-64 shrink-0">
             <div className="sticky top-24 bg-card p-6 rounded-md border">
               <h2 className="font-semibold text-lg mb-4">Filtros</h2>
-              <Filters onFilterChange={setFilters} categories={categories} />
+
+              <Filters
+                onFilterChange={setFilters}
+                categories={categories}
+                currentFilters={filters}
+              />
             </div>
           </aside>
 
-          {/* Games Grid */}
           <div className="flex-1">
             {error && (
               <Alert variant="destructive" className="mb-6">
@@ -109,10 +128,10 @@ export default function Home() {
               </Alert>
             )}
 
-            <div className="mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-2xl font-heading font-bold">
                 {filters.search || filters.category
-                  ? `Resultados (${filteredGames.length})`
+                  ? `Resultados (${sortedGames.length})`
                   : "Todos os Jogos"}
               </h2>
             </div>
@@ -127,7 +146,7 @@ export default function Home() {
                   </div>
                 ))}
               </div>
-            ) : filteredGames.length === 0 ? (
+            ) : sortedGames.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-muted-foreground text-lg">
                   Nenhum jogo encontrado com os filtros selecionados
@@ -135,7 +154,7 @@ export default function Home() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredGames.map((game) => (
+                {sortedGames.map((game) => (
                   <GameCard key={game.id} game={game} />
                 ))}
               </div>

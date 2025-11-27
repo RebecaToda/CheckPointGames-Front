@@ -147,4 +147,5 @@ export interface GameFilters {
   minPrice?: number;
   maxPrice?: number;
   search?: string;
+  sort?: "az" | "za" | "price_asc" | "price_desc";
 }

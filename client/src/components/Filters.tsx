@@ -1,157 +1,172 @@
-import { useState, useEffect } from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Search, X } from 'lucide-react';
-import { GameFilters } from '@shared/schema';
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { GameFilters } from "@shared/schema";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { X } from "lucide-react";
 
 interface FiltersProps {
   onFilterChange: (filters: GameFilters) => void;
   categories: string[];
+  currentFilters: GameFilters;
 }
 
-export function Filters({ onFilterChange, categories }: FiltersProps) {
-  const [search, setSearch] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
-  const [minPrice, setMinPrice] = useState('0');
-  const [maxPrice, setMaxPrice] = useState('500');
-
-  useEffect(() => {
-    const filters: GameFilters = {
-      search: search || undefined,
-      category: selectedCategories.length > 0 ? selectedCategories[0] : undefined,
-      minPrice: priceRange[0],
-      maxPrice: priceRange[1],
-    };
-    onFilterChange(filters);
-  }, [search, selectedCategories, priceRange]);
-
-  const handleCategoryToggle = (category: string) => {
-    setSelectedCategories(current =>
-      current.includes(category)
-        ? current.filter(c => c !== category)
-        : [category]
-    );
+export function Filters({
+  onFilterChange,
+  categories,
+  currentFilters,
+}: FiltersProps) {
+  const handleSortChange = (value: string) => {
+    onFilterChange({ ...currentFilters, sort: value as any });
   };
 
-  const handlePriceRangeChange = (values: number[]) => {
-    setPriceRange([values[0], values[1]]);
-    setMinPrice(values[0].toString());
-    setMaxPrice(values[1].toString());
+  const handleCategoryChange = (category: string) => {
+    const newCategory =
+      currentFilters.category === category ? undefined : category;
+    onFilterChange({ ...currentFilters, category: newCategory });
   };
 
-  const handleMinPriceChange = (value: string) => {
-    setMinPrice(value);
-    const num = parseFloat(value) || 0;
-    setPriceRange([num, priceRange[1]]);
-  };
-
-  const handleMaxPriceChange = (value: string) => {
-    setMaxPrice(value);
-    const num = parseFloat(value) || 500;
-    setPriceRange([priceRange[0], num]);
+  const handlePriceChange = (type: "min" | "max", value: string) => {
+    const numValue = value === "" ? undefined : Number(value);
+    onFilterChange({
+      ...currentFilters,
+      [type === "min" ? "minPrice" : "maxPrice"]: numValue,
+    });
   };
 
   const clearFilters = () => {
-    setSearch('');
-    setSelectedCategories([]);
-    setPriceRange([0, 500]);
-    setMinPrice('0');
-    setMaxPrice('500');
+    onFilterChange({});
   };
 
   return (
     <div className="space-y-6">
-      <div>
-        <Label htmlFor="search" className="mb-2 block">Buscar</Label>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            id="search"
-            placeholder="Nome do jogo..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9"
-            data-testid="input-search"
-          />
-        </div>
+      <div className="flex items-center justify-between">
+        <h3 className="font-medium text-sm text-muted-foreground">
+          Filtros Ativos
+        </h3>
+        {(currentFilters.category ||
+          currentFilters.minPrice ||
+          currentFilters.maxPrice ||
+          currentFilters.sort) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearFilters}
+            className="h-auto p-0 text-xs hover:bg-transparent text-destructive"
+          >
+            Limpar <X className="ml-1 h-3 w-3" />
+          </Button>
+        )}
       </div>
 
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <Label className="text-sm font-semibold">Categorias</Label>
-        </div>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category} className="flex items-center gap-2">
-              <Checkbox
-                id={`category-${category}`}
-                checked={selectedCategories.includes(category)}
-                onCheckedChange={() => handleCategoryToggle(category)}
-                data-testid={`checkbox-category-${category}`}
-              />
-              <Label
-                htmlFor={`category-${category}`}
-                className="text-sm cursor-pointer"
-              >
-                {category}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <Label className="mb-3 block text-sm font-semibold">Faixa de Preço</Label>
-        <Slider
-          min={0}
-          max={500}
-          step={10}
-          value={priceRange}
-          onValueChange={handlePriceRangeChange}
-          className="mb-4"
-          data-testid="slider-price"
-        />
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label htmlFor="min-price" className="text-xs mb-1 block">Mínimo</Label>
-            <Input
-              id="min-price"
-              type="number"
-              value={minPrice}
-              onChange={(e) => handleMinPriceChange(e.target.value)}
-              className="h-8"
-              data-testid="input-min-price"
-            />
-          </div>
-          <div>
-            <Label htmlFor="max-price" className="text-xs mb-1 block">Máximo</Label>
-            <Input
-              id="max-price"
-              type="number"
-              value={maxPrice}
-              onChange={(e) => handleMaxPriceChange(e.target.value)}
-              className="h-8"
-              data-testid="input-max-price"
-            />
-          </div>
-        </div>
-      </div>
-
-      {(search || selectedCategories.length > 0 || priceRange[0] > 0 || priceRange[1] < 500) && (
-        <Button
-          variant="outline"
-          onClick={clearFilters}
-          className="w-full"
-          data-testid="button-clear-filters"
+      <div className="space-y-2">
+        <Label>Ordenar por</Label>
+        <Select
+          value={currentFilters.sort || "az"}
+          onValueChange={handleSortChange}
         >
-          <X className="h-4 w-4 mr-2" />
-          Limpar Filtros
-        </Button>
-      )}
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione a ordem" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="az">A - Z (Nome)</SelectItem>
+            <SelectItem value="za">Z - A (Nome)</SelectItem>
+            <SelectItem value="price_asc">Menor Preço</SelectItem>
+            <SelectItem value="price_desc">Maior Preço</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Accordion type="single" collapsible className="w-full">
+        <AccordionItem value="categories" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <span className="font-medium text-base">Categorias</span>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2 pt-2">
+              {categories.map((category) => (
+                <div key={category} className="flex items-center">
+                  <Button
+                    variant={
+                      currentFilters.category === category
+                        ? "secondary"
+                        : "ghost"
+                    }
+                    className={`w-full justify-start h-8 px-2 font-normal ${
+                      currentFilters.category === category
+                        ? "bg-primary/10 text-primary hover:bg-primary/20"
+                        : ""
+                    }`}
+                    onClick={() => handleCategoryChange(category)}
+                  >
+                    {category}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
+      <div className="space-y-4 pt-4 border-t">
+        <Label>Faixa de Preço</Label>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label
+              htmlFor="min-price"
+              className="text-xs text-muted-foreground"
+            >
+              Mínimo
+            </Label>
+            <div className="relative">
+              <span className="absolute left-2 top-2.5 text-muted-foreground text-xs">
+                R$
+              </span>
+              <Input
+                id="min-price"
+                type="number"
+                placeholder="0"
+                className="pl-6 h-9"
+                value={currentFilters.minPrice || ""}
+                onChange={(e) => handlePriceChange("min", e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label
+              htmlFor="max-price"
+              className="text-xs text-muted-foreground"
+            >
+              Máximo
+            </Label>
+            <div className="relative">
+              <span className="absolute left-2 top-2.5 text-muted-foreground text-xs">
+                R$
+              </span>
+              <Input
+                id="max-price"
+                type="number"
+                placeholder="Max"
+                className="pl-6 h-9"
+                value={currentFilters.maxPrice || ""}
+                onChange={(e) => handlePriceChange("max", e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
